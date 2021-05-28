@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Inject, Param, Post } from '@nestjs/common';
+import { exception } from 'console';
 import { RedisClient } from 'redis';
 
 import { REDIS_CONNECTION, REDIS_TOPIC } from '../redis/redis.providers';
@@ -15,7 +16,11 @@ export class BooksController {
 
   @Get('/')
   getBooks(): BookDto[] {
-    console.log('Get books');
+    console.log('Get books4');
+    // while(true){
+    //     console.log("Delay");
+    // }
+    //throw new SyntaxError("Data error");
     return this.booksService.getBooks();
   }
 
