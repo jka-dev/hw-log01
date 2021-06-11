@@ -5,7 +5,7 @@ import { AuthorsService } from './authors.service';
 import { AuthorDto, CreateAuthorInput } from './authors.dto';
 import { REDIS_CONNECTION, REDIS_TOPIC } from '../redis/redis.providers';
 //import { initTracer } from "jaeger-client"
-//import {JaegerInterceptor} from "@chankamlam/nest-jaeger";
+import {JaegerInterceptor} from "@chankamlam/nest-jaeger";
 
 //const tracer = initTracer("hello-world");
 
@@ -40,8 +40,9 @@ export class AuthorsController {
   //@SetMetadata('ExceptJaegerInterceptor', true)
  // @UseInterceptors(JaegerInterceptor)
   @Get('/')
+  
   getAuthors(): AuthorDto[] {
-    console.log('Get authors3');
+    console.log('Get authors4');
     //req.jaeger.setTag(req.jaeger.tags.ERROR,true)
     //req.jaeger.log("error","err....")
     //const span = tracer.startSpan("http_request");

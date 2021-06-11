@@ -4,8 +4,23 @@ import { AppModule } from './app.module';
 
 import {JaegerInterceptor} from '@chankamlam/nest-jaeger'
 
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const winston = require('winston');
+  const { ElasticsearchTransport } = require('winston-elasticsearch');
+     const esTransportOpts = {
+         level: 'info'
+     };
+  //const esTransport = new ElasticsearchTransport(esTransportOpts);
+  const logger = winston.createLogger({
+        transports: [
+            new winston.transports.Console(),
+            new winston.transports.File({ filename: '/home/logs/log.log' })
+        ]
+  });
+  const app = await NestFactory.create(AppModule,{
+    logger: logger,
+  });
   const config = {
     serviceName: 'frontend-service',
     sampler: {
@@ -13,24 +28,24 @@ async function bootstrap() {
         param: 1
     },
     reporter: {
-        collectorEndpoint: process.env.JAEGER_AGENT_HOST+':'+process.env.JAEGER_AGENT_PORT + '/api/traces'//"http://localhost:14268/api/traces"
+        collectorEndpoint: process.env.JAEGER_AGENT_HOST+':'+process.env.JAEGER_AGENT_PORT + '/api/traces',
+        logSpans: true
     },
-};                                             // required
-const options = { baggagePrefix: "-JKa-" };  // optional,you can let options={}
+};                                             
+const options = { baggagePrefix: "-JKa-" };  
 
   // setup as global interceptor
-  app.useGlobalInterceptors(new JaegerInterceptor(config,options,
+   app.useGlobalInterceptors(new JaegerInterceptor(config,options,
     (req,res)=>{
-      // do something here before request if u want
-      req.jaeger.log("info","just for global log")
-      const span = req.jaeger.createSpan("FrontSpan");
-      span.log("info","front request...");
-      span.setTag("front-req",true);
 
-      span.finish();
+      req.jaeger.log("info","frontend span")
+      req.jaeger.setTracingTag('trace', 'frontend');
+      logger.info("frontend log test");
+      //const span = req.jaeger.createSpan("FrontSpan");
+      //span.finish();
     },
     (req,res)=>{
-      // do some thing here before response if u want
+
     }));
   await app.listen(8083);
 }

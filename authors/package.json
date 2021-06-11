@@ -27,7 +27,9 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^6.6.6",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "winston": "^3.3.3",
+    "winston-elasticsearch": "^0.15.6"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.5.6",

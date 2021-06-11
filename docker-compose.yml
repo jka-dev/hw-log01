@@ -1,5 +1,28 @@
 version: "3"
 services:
+  elasticsearch:
+    image: "docker.elastic.co/elasticsearch/elasticsearch:7.2.0"
+    environment:
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "discovery.type=single-node"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+
+  kibana:
+    image: "docker.elastic.co/kibana/kibana:7.2.0"
+    ports:
+      - "5601:5601"
+
+  filebeat:
+    image: "docker.elastic.co/beats/filebeat:7.2.0"
+    user: root
+    volumes:
+      - ./logs/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+            
   authors:
     build: ./authors
     container_name: authors-service
@@ -7,11 +30,14 @@ services:
       - 8081:8081
     depends_on:
       - redis
+      - jaeger
     environment:
       - JAEGER_AGENT_HOST=http://jaeger
       - JAEGER_AGENT_PORT=14268
     networks:
       - mynet
+    volumes:
+      - ./logs:/home/logs
   books:
     build: ./books
     container_name: books-service
@@ -24,6 +50,9 @@ services:
       - mynet
     depends_on:
       - redis
+      - jaeger
+    volumes:
+      - ./logs:/home/logs
   frontend:
     build: ./frontend
     container_name: frontend-service
@@ -36,6 +65,9 @@ services:
       - mynet
     depends_on:
       - redis
+      - jaeger
+    volumes:
+      - ./logs:/home/logs
   redis:
     image: redis:latest
     container_name: redis
@@ -60,3 +92,6 @@ services:
 
 networks:
   mynet:
+
+volumes:
+  elasticsearch_data:
