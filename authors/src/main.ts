@@ -3,8 +3,23 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
 import {JaegerInterceptor} from '@chankamlam/nest-jaeger'
+import { MetricsService } from './modules/metrics/metrics.service';
 
 async function bootstrap() {
+
+    const client = require('prom-client');
+    const counter = new client.Counter({
+        name: 'request_count',
+        help: 'Request count',
+        labelNames: ['ControllerName', 'ServiceName']
+    });
+    const histogram = new client.Histogram({
+        name: 'execution_duration',
+        help: 'Endpoint execution time',
+        labelNames: ['ControllerName', 'ServiceName']
+    });
+    histogram.observe(10); 
+  
     const winston = require('winston');
     const { ElasticsearchTransport } = require('winston-elasticsearch');
     const esTransportOpts = {
@@ -31,7 +46,8 @@ async function bootstrap() {
         collectorEndpoint: process.env.JAEGER_AGENT_HOST+':'+process.env.JAEGER_AGENT_PORT + '/api/traces',
         logSpans: true
     },
-};                                             
+};                           
+const end = histogram.startTimer();                  
 const options = { baggagePrefix: "-JKa-" };  
      app.useGlobalInterceptors(new JaegerInterceptor(config,options,
         (req,res)=>{
@@ -39,7 +55,13 @@ const options = { baggagePrefix: "-JKa-" };
         //const span = req.jaeger.createSpan("authors");
         req.jaeger.setTracingTag('trace', 'authors');
         logger.info("authors log test");
+        counter.inc(1);
+        console.log("inc 1");
+        // this.metricsService.incrementRequestCount(
+        //     'Authors',
+        //     'authors');
        // span.finish();
+        end();
         
       },
       (req,res)=>{
